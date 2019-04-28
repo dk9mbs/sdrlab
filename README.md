@@ -1,15 +1,15 @@
-raw2wac.py
+# SDR Lab
 
+## Install
 pip3 install numpy
 pip3 install scipy
 pip3 install matplotlib
 
 
-Hear FM radio with rtl_fm:
-
-1.) rtl_fm -M wbfm -f 103.1M -g 20 -r 48k /tmp/sound.raw
-2.) ./raw2wav.py
-3.) Listen the soundfile "/tmp/sound.wav" with audacity for example
+## Hear FM radio with rtl_fm:
+1. rtl_fm -M wbfm -f 103.1M -g 20 -r 48k /tmp/sound.raw
+2. ./raw2wav.py
+3. Listen the soundfile "/tmp/sound.wav" with audacity for example
 
 
 
