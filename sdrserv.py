@@ -15,6 +15,10 @@ samplerate=2400000
 gain=20
 outputfile='-'
 
+HOST = ''
+PORT = 33000
+BUFSIZ = 1024
+
 
 parser = argparse.ArgumentParser(description='Get iq datastream form radio device')
 
@@ -26,6 +30,8 @@ parser.add_argument("-s", "--sample-rate", dest="samplerate",
                         help="Samplerate", metavar="SAMPLERATE")
 parser.add_argument("-g", "--gain", dest="gain",
                         help="Gain", metavar="GAIN")
+parser.add_argument("-p", "--port", dest="port",
+                        help="TCP port for listening iq stream", metavar="PORT")
 parser.add_argument("-q", "--quiet",
                         action="store_false", dest="verbose", default=True,
                         help="don't print status messages to stdout")
@@ -42,6 +48,12 @@ if args.samplerate:
 
 if args.gain:
     gain=args.gain
+
+if args.port:
+    PORT=int(args.port)
+
+ADDR = (HOST, PORT)
+print(ADDR)
 
 
 # TCP Server
@@ -92,10 +104,6 @@ def broadcast(msg, prefix=""):
 clients = {}
 addresses = {}
 
-HOST = ''
-PORT = 33001
-BUFSIZ = 1024
-ADDR = (HOST, PORT)
 
 SERVER = socket(AF_INET, SOCK_STREAM)
 SERVER.bind(ADDR)

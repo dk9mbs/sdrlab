@@ -14,3 +14,6 @@
 ## Capture IQ data with rtl_sdr (command for sdrserv.py)
 rtl_sdr -f 89000000 -g 20 -s 2400000 -n 24000000 - > ./iq2.dat 
 
+## sdrlab tcp server for captering ig data over the network
+./sdrserv.py -f 89000000 -g 10 -o - -s 2400000 -p 33005
+
