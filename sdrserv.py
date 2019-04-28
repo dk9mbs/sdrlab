@@ -98,8 +98,8 @@ def broadcast(msg, prefix=""):
         try:
             sock.send(msg)
         except:
-            del client[sock]
-            print("Closed connection by peer!\n", file=sys.stderr)
+            del clients[sock]
+            print("Closed connection by peer!", file=sys.stderr)
             
 clients = {}
 addresses = {}
@@ -127,7 +127,7 @@ signal.signal(signal.SIGINT, handler)
 
 
 cmd = 'rtl_sdr -f %s -s %s -g %s %s' % (frequency,samplerate,gain,outputfile)
-print('IQ process cmd => %s\n' % cmd, file=sys.stderr)
+print('IQ process cmd => %s' % cmd, file=sys.stderr)
 
 p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
 while True:
