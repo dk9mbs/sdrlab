@@ -1,7 +1,7 @@
 #!/usr/bin/python3.5
 
 from __future__ import print_function
-import subprocess
+
 import sys
 import argparse
 from socket import AF_INET, socket, SOCK_STREAM
@@ -9,15 +9,11 @@ from threading import Thread, Lock
 import signal
 import os
 from common.streamserver import StreamServer
+from hardware.rtlsdr import RtlSdr as Hardware
 
-frequency=103100000
-samplerate=2400000
-gain=20
-outputfile='-'
 
-host = '0.0.0.0'
-port = 33000
-
+hwcfg={'frequency': 103100000, 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'}
+iqstreamcfg={'host': '0.0.0.0', 'port': 33000}
 
 parser = argparse.ArgumentParser(description='Get iq datastream form radio device')
 
@@ -37,51 +33,36 @@ parser.add_argument("-q", "--quiet",
 
 args = parser.parse_args()
 if args.frequency:
-    frequency=args.frequency
+    hwcfg['frequency']=args.frequency
 
 if args.outputfile:
-    outputfile=args.outputfile
+    hwcfg['outputfile']=args.outputfile
 
 if args.samplerate:
-    samplerate=args.samplerate
+    hwcfg['samplerate']=args.samplerate
 
 if args.gain:
-    gain=args.gain
+    hwcfg['gain']=args.gain
 
 if args.port:
-    port=int(args.port)
+    iqstreamcfg['port']=int(args.port)
 
 
-server = socket(AF_INET, SOCK_STREAM)
-server.bind((host, port))
-server.listen(5)
-
-iqstream=StreamServer(server)
+iqstream= StreamServer(**iqstreamcfg)
 iqstream.start()
 print("Waiting for tcp connection...", sys.stderr)
 
 
 def handler(signum, frame):
     print('Strg+c', signum)
-    os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+    os.killpg(os.getpgid(hardware.p.pid), signal.SIGTERM)
+    iqstream.server.close()
     iqstream.stop()
     iqstream.join()
-    server.close()
     sys.exit()
 
 signal.signal(signal.SIGINT, handler)
 
 
-
-
-cmd = 'rtl_sdr -f %s -s %s -g %s %s' % (frequency,samplerate,gain,outputfile)
-print('IQ process cmd => %s' % cmd, file=sys.stderr)
-
-p=subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE)
-while True:
-    out=p.stdout.read(16384)
-    if out=='' and p.poll() != None:
-        break
-    if out != '':
-        iqstream.broadcast(out)        
-
+hardware=Hardware()
+hardware.get_iq_stream(iqstream, **hwcfg)

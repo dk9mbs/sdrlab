@@ -11,12 +11,17 @@ import os
 
 
 class StreamServer(Thread):
-    def __init__(self, server):
+    def __init__(self, **config):
         Thread.__init__(self)
         self.clients={}
         self.addresses={}
-        self.server=server
+        #self.server=server
         self.bufsiz = 1024
+
+        self.server = socket(AF_INET, SOCK_STREAM)
+        self.server.bind((config['host'], config['port']))
+        self.server.listen(5)
+
 
     def run(self):
         ACCEPT_THREAD = Thread(target=self.accept_incoming_connections)
@@ -55,7 +60,7 @@ class StreamServer(Thread):
                 break
 
 
-    def broadcast(self,msg, prefix=""):
+    def write(self,msg, prefix=""):
         """Broadcasts a message to all the clients."""
         for sock in list(self.clients): # list is a copy of clients
             try:
