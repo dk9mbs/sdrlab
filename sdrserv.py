@@ -8,8 +8,8 @@ from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread, Lock
 import signal
 import os
-from common.streamserver import StreamServer
-from hardware.rtlsdr import RtlSdr as Hardware
+from dk9mbs.common.streamserver import StreamServer
+from dk9mbs.hardware.rtlsdr import RtlSdr as Hardware
 
 
 hwcfg={'frequency': 103100000, 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'}
