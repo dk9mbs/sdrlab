@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import sys
+import json
 import argparse
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread, Lock
@@ -12,8 +13,8 @@ from dk9mbs.common.streamserver import StreamServer
 from dk9mbs.hardware.rtlsdr import RtlSdr as Hardware
 
 
-hwcfg={'frequency': 103100000, 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'}
-iqstreamcfg={'host': '0.0.0.0', 'port': 33000}
+cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33000},
+     'hwcfg': {'frequency': 103100000, 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'}}
 
 parser = argparse.ArgumentParser(description='Get iq datastream form radio device')
 
@@ -33,24 +34,30 @@ parser.add_argument("-q", "--quiet",
 
 args = parser.parse_args()
 if args.frequency:
-    hwcfg['frequency']=args.frequency
+    cfg['hwcfg']['frequency']=args.frequency
 
 if args.outputfile:
-    hwcfg['outputfile']=args.outputfile
+    cfg['hwcfg']['outputfile']=args.outputfile
 
 if args.samplerate:
-    hwcfg['samplerate']=args.samplerate
+    cfg['hwcfg']['samplerate']=args.samplerate
 
 if args.gain:
-    hwcfg['gain']=args.gain
+    cfg['hwcfg']['gain']=args.gain
 
 if args.port:
-    iqstreamcfg['port']=int(args.port)
+    cfg['iqstreamcfg']['port']=int(args.port)
 
+print(cfg['iqstreamcfg'], file=sys.stderr)
+print(cfg['hwcfg'], file=sys.stderr)
 
-iqstream= StreamServer(**iqstreamcfg)
+iqstream= StreamServer(**(cfg['iqstreamcfg']))
 iqstream.start()
 print("Waiting for tcp connection...", sys.stderr)
+
+
+hardware=Hardware()
+hardware.get_iq_stream(iqstream, **(cfg['hwcfg']))
 
 
 def handler(signum, frame):
@@ -64,5 +71,3 @@ def handler(signum, frame):
 signal.signal(signal.SIGINT, handler)
 
 
-hardware=Hardware()
-hardware.get_iq_stream(iqstream, **hwcfg)
