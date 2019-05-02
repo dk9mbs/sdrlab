@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import sys
 import json
+import time
 import argparse
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread, Lock
@@ -14,7 +15,7 @@ from dk9mbs.hardware.rtlsdr import RtlSdr as Hardware
 
 
 cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33000},
-     'hwcfg': {'frequency': 103100000, 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'}}
+     'hwcfg': {'output_block_size': 16384, 'frequency': 103100000, 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'}}
 
 parser = argparse.ArgumentParser(description='Get iq datastream form radio device')
 
@@ -51,13 +52,18 @@ if args.port:
 print(cfg['iqstreamcfg'], file=sys.stderr)
 print(cfg['hwcfg'], file=sys.stderr)
 
-iqstream= StreamServer(**(cfg['iqstreamcfg']))
+iqstream= StreamServer(sys.stderr, **(cfg['iqstreamcfg']))
 iqstream.start()
 print("Waiting for tcp connection...", sys.stderr)
 
+hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
+hardware.start()
 
-hardware=Hardware()
-hardware.get_iq_stream(iqstream, **(cfg['hwcfg']))
+#time.sleep(5)
+#print ("nach 5")
+#hardware.test()
+#hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
+#hardware.start()
 
 
 def handler(signum, frame):

@@ -11,8 +11,9 @@ import os
 
 
 class StreamServer(Thread):
-    def __init__(self, **config):
+    def __init__(self,logger, **config):
         Thread.__init__(self)
+        self.logger=logger
         self.clients={}
         self.addresses={}
         #self.server=server
@@ -21,7 +22,7 @@ class StreamServer(Thread):
         self.server = socket(AF_INET, SOCK_STREAM)
         self.server.bind((config['host'], config['port']))
         self.server.listen(5)
-
+    
 
     def run(self):
         ACCEPT_THREAD = Thread(target=self.accept_incoming_connections)
@@ -31,7 +32,7 @@ class StreamServer(Thread):
         """Sets up handling for incoming clients."""
         while True:
             client, client_address = self.server.accept()
-            print("%s:%s has connected." % client_address, file=sys.stderr)
+            print("%s:%s has connected." % client_address, file=self.logger)
             #client.send(bytes("Greetings from the cave! Now type your name and press enter!", "utf8"))
             self.addresses[client] = client_address
             Thread(target=self.handle_client, args=(client,)).start()
@@ -67,7 +68,7 @@ class StreamServer(Thread):
                 sock.send(msg)
             except:
                 del self.clients[sock]
-                print("Closed connection by peer!", file=sys.stderr)
+                print("Closed connection by peer!", file=self.logger)
 
 
 # END TCP Server
