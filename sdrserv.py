@@ -79,8 +79,6 @@ hardware.start()
 time.sleep(5)
 hardware.update(**{'frequency': 89700000})
 
-#hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
-#hardware.start()
 
 
 
