@@ -13,6 +13,10 @@ import os
 from dk9mbs.common.streamserver import StreamServer
 from dk9mbs.hardware.rtlsdr import RtlSdr as Hardware
 
+# bottle
+from bottle import route
+from bottle import static_file
+from bottle import run
 
 cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33000},
      'hwcfg': {'output_block_size': 16384, 'frequency': 103100000
@@ -76,11 +80,19 @@ signal.signal(signal.SIGTERM, handler)
 hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
 hardware.start()
 
-time.sleep(5)
-hardware.update(**{'frequency': 89700000})
+@route('/')
+def test():
+    return static_file('htdocs/index.htm', root='.')
+
+
+@route('/api/v1.0/update/<attribute>/<value>')
+def update(attribute, value):
+    hardware.update(**{attribute : str(value)})
+    return "OK"
 
 
 
+run(host='localhost', port=8081, debug=True)
 
 
 
