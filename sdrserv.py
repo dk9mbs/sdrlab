@@ -15,7 +15,9 @@ from dk9mbs.hardware.rtlsdr import RtlSdr as Hardware
 
 
 cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33000},
-     'hwcfg': {'output_block_size': 16384, 'frequency': 103100000, 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'}}
+     'hwcfg': {'output_block_size': 16384, 'frequency': 103100000
+            , 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'}
+     }
 
 parser = argparse.ArgumentParser(description='Get iq datastream form radio device')
 
@@ -75,13 +77,12 @@ hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
 hardware.start()
 
 time.sleep(5)
-print ("nach 5")
-hardware.reinit(**(cfg['hwcfg']))
+hardware.update(**{'frequency': 89700000})
+
+#hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
+#hardware.start()
 
 
-time.sleep(5)
-print ("2. nach 5")
-hardware.reinit(**(cfg['hwcfg']))
 
 
 
