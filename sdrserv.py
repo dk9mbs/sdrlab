@@ -56,24 +56,34 @@ iqstream= StreamServer(sys.stderr, **(cfg['iqstreamcfg']))
 iqstream.start()
 print("Waiting for tcp connection...", sys.stderr)
 
-hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
-hardware.start()
-
-#time.sleep(5)
-#print ("nach 5")
-#hardware.test()
-#hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
-#hardware.start()
-
 
 def handler(signum, frame):
+    pass
+
+def handler_int(signum, frame):
     print('Strg+c', signum)
-    os.killpg(os.getpgid(hardware.p.pid), signal.SIGTERM)
     iqstream.server.close()
-    iqstream.stop()
     iqstream.join()
     sys.exit()
 
-signal.signal(signal.SIGINT, handler)
+signal.signal(signal.SIGINT, handler_int)
+signal.signal(signal.SIGTERM, handler)
+
+
+
+hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
+hardware.start()
+
+time.sleep(5)
+print ("nach 5")
+hardware.reinit(**(cfg['hwcfg']))
+
+
+time.sleep(5)
+print ("2. nach 5")
+hardware.reinit(**(cfg['hwcfg']))
+
+
+
 
 
