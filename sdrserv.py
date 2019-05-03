@@ -13,10 +13,8 @@ import os
 from dk9mbs.common.streamserver import StreamServer
 from dk9mbs.hardware.rtlsdr import RtlSdr as Hardware
 
-# bottle
-from bottle import route
-from bottle import static_file
-from bottle import run
+from flask import Flask
+from flask import render_template
 
 cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33000},
      'hwcfg': {'output_block_size': 16384, 'frequency': 103100000
@@ -70,29 +68,40 @@ def handler_int(signum, frame):
     print('Strg+c', signum)
     iqstream.server.close()
     iqstream.join()
+    #server.terminate()
+    #server.join()
     sys.exit()
 
 signal.signal(signal.SIGINT, handler_int)
 signal.signal(signal.SIGTERM, handler)
 
-
-
 hardware=Hardware(sys.stderr, iqstream, **(cfg['hwcfg']))
 hardware.start()
 
-@route('/')
+# Flask
+from multiprocessing import Process
+
+app = Flask(__name__, template_folder='htdocs')
+app.config['SECRET_KEY'] = 'secret!'
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.jinja_env.auto_reload = True
+
+app.debug=False
+app.host='0.0.0.0'
+app.port=8080
+app.threaded=True
+@app.route('/')
 def test():
-    return static_file('htdocs/index.htm', root='.')
+    return render_template('index.htm', config=cfg)
 
-
-@route('/api/v1.0/update/<attribute>/<value>')
+@app.route('/api/v1.0/update/<attribute>/<value>')
 def update(attribute, value):
     hardware.update(**{attribute : str(value)})
     return "OK"
 
-
-
-run(host='localhost', port=8081, debug=True)
+app.run(port=8080, host='0.0.0.0')
+#server = Process(target=app.run)
+#server.start()
 
 
 
