@@ -13,6 +13,7 @@ import os
 class StreamServer(Thread):
     def __init__(self,logger, **config):
         Thread.__init__(self)
+        self.config=config
         self.logger=logger
         self.clients={}
         self.addresses={}

@@ -1,1 +1,81 @@
-hallo welt!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>The HTML5 Herald</title>
+  <meta name="description" content="The HTML5 Herald">
+  <meta name="author" content="SitePoint">
+
+  <!--<link rel="stylesheet" href="css/styles.css?v=1.0">-->
+
+</head>
+
+<body>
+  <!--<script src="js/scripts.js"></script>-->
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
+
+
+
+<div id="app">
+
+<table border=0>
+<tr v-for="n in keys">
+<td>{% raw %}{{ n.label }}{% endraw %}</td>
+<td><input v-model="config[n.name]" id="frequency"></td>
+<td>{% raw %}{{ n.unit }}{% endraw %}</td>
+</tr>
+</table>
+
+<button v-on:click="sethardware">Hardware</button>
+
+</div>
+
+
+
+<script>
+new Vue({
+  el: '#app',
+  data () {
+    return {
+      config: {},
+      keys: [{'name': 'frequency', 'unit':'Hz', 'label':'Frequency'},
+	{'name': 'gain','unit':'dB', 'label':'Gain'}, 
+	{'name': 'output_block_size','unit':'Bytes', 'label':'Blocksize'}, 
+	{'name': 'samplerate', 'unit':'S/s', 'label':'Samplerate'},
+	{'name': 'outputfile', 'unit':'--', 'label':'Output'}]
+    }
+  },
+  mounted () {
+    axios
+      .get('/api/v1.0/config/hardware')
+      .then(response => (this.config = response.data))
+  },
+   filters:{
+      getconfigkey: function(value,key){
+	if(value==null) return null;
+        return value[key];
+      }
+    },
+  methods: {
+    sethardware: function (event) {
+        var config = { headers: {  
+                      'Content-Type': 'application/json',
+                      'Access-Control-Allow-Origin': '*'}
+             }
+
+        axios.post('/api/v1.0/config/hardware', JSON.stringify(this.config), config)
+	.then( function(response){ console.log(response.status) })
+	.catch( function(error) { console.log( error.response) });
+	
+    }
+  }
+})
+  </script>
+
+
+
+
+</body>
+</html>

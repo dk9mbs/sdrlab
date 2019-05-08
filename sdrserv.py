@@ -6,19 +6,31 @@ import sys
 import json
 import time
 import argparse
+import os
+import signal
+
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread, Lock
-import signal
-import os
 from dk9mbs.common.streamserver import StreamServer
 from dk9mbs.hardware.rtlsdr import RtlSdr as Hardware
 
 from flask import Flask
 from flask import render_template
+from flask import request
+from flask import abort
 
-cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33000},
+from gevent.pywsgi import WSGIServer
+from geventwebsocket import WebSocketError
+from geventwebsocket.handler import WebSocketHandler
+
+
+hardware=None
+iqstream=None
+
+cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33003},
      'hwcfg': {'output_block_size': 16384, 'frequency': 103100000
-            , 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'}
+            , 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'},
+     'httpcfg': {'host': '0.0.0.0', 'port': '8080'}
      }
 
 parser = argparse.ArgumentParser(description='Get iq datastream form radio device')
@@ -68,8 +80,7 @@ def handler_int(signum, frame):
     print('Strg+c', signum)
     iqstream.server.close()
     iqstream.join()
-    #server.terminate()
-    #server.join()
+    #server.stop()
     sys.exit()
 
 signal.signal(signal.SIGINT, handler_int)
@@ -87,19 +98,65 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
 
 app.debug=False
-app.host='0.0.0.0'
-app.port=8080
+app.host=cfg['httpcfg']['host']
+app.port=cfg['httpcfg']['port']
 app.threaded=True
+
 @app.route('/')
-def test():
+def index():
     return render_template('index.htm', config=cfg)
 
-@app.route('/api/v1.0/update/<attribute>/<value>')
-def update(attribute, value):
-    hardware.update(**{attribute : str(value)})
+# Websocket
+connections = set()
+opts = {}
+
+@app.route('/websocket')
+def handle_websocket():
+    wsock = request.environ.get('wsgi.websocket')
+    if not wsock:
+        abort(400, 'Expected WebSocket request.')
+
+    connections.add(wsock)
+
+    # Send center frequency and span
+    wsock.send(json.dumps(opts))
+
+    while True:
+        try:
+            wsock.receive()
+        except WebSocketError:
+            break
+    connections.remove(wsock)
+
+
+# Api v1.0
+@app.route('/api/v1.0/config/<scope>', methods=['POST'])
+def set_config(scope):
+    print("Set config ...")
+    if scope=='hardware':
+        for key in request.json:
+            print('%s => %s' % (key, key))
+        hardware.update(**request.json)
     return "OK"
 
-app.run(port=8080, host='0.0.0.0')
+@app.route('/api/v1.0/config/<scope>', methods=['GET'])
+def get_config(scope):
+    if scope=='hardware':
+        return json.dumps(hardware.config)
+
+    if scope=='stream':
+        return json.dumps(iqstream.config)
+
+    return json.dumps({'error': 'No config'})
+
+app.run(port=int(cfg['httpcfg']['port']), host=cfg['httpcfg']['host'])
+
+#server = WSGIServer((cfg['httpcfg']['host'], cfg['httpcfg']['port']), app, handler_class=WebSocketHandler)
+#try:
+#    server.serve_forever()
+#except Exception:
+#    sys.exit(0)
+
 #server = Process(target=app.run)
 #server.start()
 
