@@ -12,7 +12,7 @@ import signal
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread, Lock
 from dk9mbs.common.streamserver import StreamServer
-from dk9mbs.hardware.windummy import RtlSdr as Hardware
+from dk9mbs.hardware.rtlsdr import RtlSdr as Hardware
 
 from flask import Flask
 from flask import render_template
@@ -27,7 +27,7 @@ from geventwebsocket.handler import WebSocketHandler
 hardware=None
 iqstream=None
 
-cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33003},
+cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33006},
      'hwcfg': {'output_block_size': 16384, 'frequency': 103100000
             , 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'},
      'httpcfg': {'host': '0.0.0.0', 'port': '8080'}
@@ -134,7 +134,6 @@ def handle_websocket():
 def set_config(scope):
     print("Set config ...")
     if scope=='hardware':
-        breakpoint()
         for key in request.json:
             print('%s => %s' % (key, key))
         hardware.update(**request.json)
@@ -154,11 +153,6 @@ def get_config(scope):
 
 server = WSGIServer((cfg['httpcfg']['host'], int(cfg['httpcfg']['port'])), app, handler_class=WebSocketHandler)
 server.serve_forever()
-
-#try:
-#    server.serve_forever()
-#except Exception:
-#    sys.exit(0)
 
 #server = Process(target=app.run)
 #server.start()
