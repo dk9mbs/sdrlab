@@ -147,7 +147,7 @@ def set_config(scope):
         hardware.update(**request.json)
 
         for wsock in connections:
-            wsock.send(json.dumps(request.json))
+            wsock.send(json.dumps(  {'type':'hardware', 'message': request.json }      ))
 
     return "OK"
 

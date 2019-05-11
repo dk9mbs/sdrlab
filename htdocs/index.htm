@@ -16,11 +16,60 @@
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js"></script>
 
+  <!-- 
+    bootstrap-vue 
+    https://bootstrap-vue.js.org/docs/reference/starter-templates/
+  -->
 
+  <link
+      type="text/css"
+      rel="stylesheet"
+      href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.css"
+    />
+  <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
+  <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.js"></script>
+  <!-- end boostrap-vue -->
 
 <div id="app">
 
-<table border=0>
+  <b-navbar toggleable="lg" type="dark" variant="dark">
+    <b-navbar-brand href="#">DK9MBS SDR Server</b-navbar-brand>
+
+    <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+
+    <b-collapse id="nav-collapse" is-nav>
+      <b-navbar-nav>
+        <b-nav-item href="#">dk9mbs.de</b-nav-item>
+      </b-navbar-nav>
+
+      <!-- Right aligned nav items -->
+      <b-navbar-nav class="ml-auto">
+        <!-- <b-nav-form>
+          <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
+          <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
+        </b-nav-form> -->
+
+        <b-nav-item-dropdown text="Lang" right>
+          <b-dropdown-item href="#">DE</b-dropdown-item>
+        </b-nav-item-dropdown>
+
+        <b-nav-item-dropdown right>
+          <!-- Using 'button-content' slot -->
+          <template slot="button-content"><em>User</em></template>
+          <b-dropdown-item href="#">Sign Out</b-dropdown-item>
+        </b-nav-item-dropdown>
+      </b-navbar-nav>
+    </b-collapse>
+  </b-navbar>
+
+
+
+<table style="margin-top: 10px; margin-bottom: 10px; ">
 <tr v-for="n in keys">
 <td>{% raw %}{{ n.label }}{% endraw %}</td>
 <td><input v-model="config[n.name]" id="frequency"></td>
@@ -28,7 +77,33 @@
 </tr>
 </table>
 
-<button v-on:click="sethardware">Hardware</button>
+<div>
+<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e7)">-10Mhz</b-button>
+<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e7)">+10Mhz</b-button>
+</div>
+
+<div>
+<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e6)">-1Mhz</b-button>
+<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e6)">+1Mhz</b-button>
+</div>
+
+<div>
+  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e5)">-100Khz</b-button>
+  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e5)">+100Khz</b-button>
+</div>
+  
+<div>
+  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e4)">-10Khz</b-button>
+  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e4)">+10Khz</b-button>
+</div>
+  
+<div>
+  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e3)">-1Khz</b-button>
+  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e3)">+1Khz</b-button>
+</div>
+  
+
+<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="sethardware" variant="danger">Hardware</b-button>
 
 </div>
 
@@ -68,6 +143,9 @@ vue = new Vue({
         axios.post('/api/v1.0/config/hardware', JSON.stringify(this.config), config)
 	        .then( function(response){ console.log(response.status) })
 	        .catch( function(error) { console.log( error.response) });
+    },
+    setfreqoffset: function (offset, event) {
+      this.config.frequency = (this.config.frequency)*1 + (offset)*1;
     }
   }
 })

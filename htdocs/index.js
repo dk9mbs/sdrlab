@@ -14,7 +14,9 @@ function connectWebSocket() {
     }
     ws.onmessage = function (evt) {
         console.log("message => " +evt.data);
-        vue.config =  JSON.parse(evt.data);
-        console.log("vue.config => "+JSON.stringify(vue.config));
+        if(JSON.parse(evt.data).type=='hardware') {
+            vue.config =  JSON.parse(evt.data)['message'];
+            console.log("vue.config => "+JSON.stringify(vue.config));
+        }
     }
 }
