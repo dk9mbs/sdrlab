@@ -80,7 +80,7 @@ def handler_int(signum, frame):
     print('Strg+c', signum)
     iqstream.server.close()
     iqstream.join()
-    #server.stop()
+    server.stop()
     sys.exit()
 
 signal.signal(signal.SIGINT, handler_int)
@@ -92,7 +92,7 @@ hardware.start()
 # Flask
 from multiprocessing import Process
 
-app = Flask(__name__, template_folder='htdocs')
+app = Flask(__name__, template_folder='htdocs', static_url_path='/htdocs')
 app.config['SECRET_KEY'] = 'secret!'
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
@@ -106,9 +106,20 @@ app.threaded=True
 def index():
     return render_template('index.htm', config=cfg)
 
+@app.route('/js/<file>', methods=['GET'])
+def get_js_file(file):
+    print('get file: %s' % file, file=sys.stderr)
+
+    #return app.send_static_file(file)
+    try:
+        return render_template(file, config=cfg)
+    except:
+        print('error')
+        abort(404)
+
+
 # Websocket
 connections = set()
-opts = {}
 
 @app.route('/websocket')
 def handle_websocket():
@@ -117,26 +128,27 @@ def handle_websocket():
         abort(400, 'Expected WebSocket request.')
 
     connections.add(wsock)
-
-    # Send center frequency and span
-    wsock.send(json.dumps(opts))
-
+    
     while True:
         try:
             wsock.receive()
         except WebSocketError:
             break
     connections.remove(wsock)
-
+    abort(500)
 
 # Api v1.0
 @app.route('/api/v1.0/config/<scope>', methods=['POST'])
 def set_config(scope):
-    print("Set config ...")
+    print("Set config ...", file=sys.stderr)
     if scope=='hardware':
         for key in request.json:
-            print('%s => %s' % (key, key))
+            print('%s => %s' % (key, key),file=sys.stderr)
         hardware.update(**request.json)
+
+        for wsock in connections:
+            wsock.send(json.dumps(request.json))
+
     return "OK"
 
 @app.route('/api/v1.0/config/<scope>', methods=['GET'])
@@ -148,8 +160,6 @@ def get_config(scope):
         return json.dumps(iqstream.config)
 
     return json.dumps({'error': 'No config'})
-
-#app.run(port=int(cfg['httpcfg']['port']), host=cfg['httpcfg']['host'])
 
 server = WSGIServer((cfg['httpcfg']['host'], int(cfg['httpcfg']['port'])), app, handler_class=WebSocketHandler)
 server.serve_forever()

@@ -8,7 +8,7 @@
   <meta name="author" content="SitePoint">
 
   <!--<link rel="stylesheet" href="css/styles.css?v=1.0">-->
-
+  <script src="/js/index.js"></script>
 </head>
 
 <body>
@@ -35,7 +35,7 @@
 
 
 <script>
-new Vue({
+vue = new Vue({
   el: '#app',
   data () {
     return {
@@ -50,7 +50,7 @@ new Vue({
   mounted () {
     axios
       .get('/api/v1.0/config/hardware')
-      .then(response => (this.config = response.data))
+      .then( response => (this.config = response.data) ) //
   },
    filters:{
       getconfigkey: function(value,key){
@@ -66,13 +66,14 @@ new Vue({
              }
 
         axios.post('/api/v1.0/config/hardware', JSON.stringify(this.config), config)
-	.then( function(response){ console.log(response.status) })
-	.catch( function(error) { console.log( error.response) });
-	
+	        .then( function(response){ console.log(response.status) })
+	        .catch( function(error) { console.log( error.response) });
     }
   }
 })
-  </script>
+
+connectWebSocket();
+</script>
 
 
 
