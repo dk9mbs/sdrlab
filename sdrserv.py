@@ -153,10 +153,10 @@ def set_config(scope):
 
 @app.route('/api/v1.0/config/<scope>', methods=['GET'])
 def get_config(scope):
-    if scope=='hardware':
+    if scope=='hardwareconfig':
         return json.dumps(hardware.config)
 
-    if scope=='stream':
+    if scope=='iqstreamconfig':
         return json.dumps(iqstream.config)
 
     return json.dumps({'error': 'No config'})

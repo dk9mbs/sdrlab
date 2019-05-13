@@ -70,44 +70,70 @@
 
 
 
-<table style="margin-top: 10px; margin-bottom: 10px; ">
-<tr v-for="n in keys">
-<td>{% raw %}{{ n.label }}{% endraw %}</td>
-<td><input v-model="config[n.name]" id="frequency"></td>
-<td>{% raw %}{{ n.unit }}{% endraw %}</td>
-</tr>
-</table>
 
-<div>
-<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e7)">-10Mhz</b-button>
-<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e7)">+10Mhz</b-button>
-</div>
+  <b-tabs>
 
-<div>
-<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e6)">-1Mhz</b-button>
-<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e6)">+1Mhz</b-button>
-</div>
-
-<div>
-  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e5)">-100Khz</b-button>
-  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e5)">+100Khz</b-button>
-</div>
+      <b-tab title="Hardware" active>
+    <!-- Start content -->
+    <table style="margin-top: 10px; margin-bottom: 10px; ">
+        <tr v-for="n in keys">
+        <td>{% raw %}{{ n.label }}{% endraw %}</td>
+        <td><input v-model="config[n.name]" id="frequency"></td>
+        <td>{% raw %}{{ n.unit }}{% endraw %}</td>
+        </tr>
+        </table>
+        
+        <div>
+        <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e7)">-10Mhz</b-button>
+        <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e7)">+10Mhz</b-button>
+        </div>
+        
+        <div>
+        <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e6)">-1Mhz</b-button>
+        <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e6)">+1Mhz</b-button>
+        </div>
+        
+        <div>
+          <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e5)">-100Khz</b-button>
+          <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e5)">+100Khz</b-button>
+        </div>
+          
+        <div>
+          <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e4)">-10Khz</b-button>
+          <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e4)">+10Khz</b-button>
+        </div>
+          
+        <div>
+          <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e3)">-1Khz</b-button>
+          <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e3)">+1Khz</b-button>
+        </div>
+          
+        
+        <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="sethardware" variant="danger">Hardware</b-button>
+        <!-- end content -->      
+      </b-tab>
   
-<div>
-  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e4)">-10Khz</b-button>
-  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e4)">+10Khz</b-button>
-</div>
+      <b-tab title="IQ Stream">
+          <b-container class="bv-example-row">
+              <b-row>
+                <b-col>Host</b-col>
+                <b-col>{% raw %}{{ iqstreamconfig['host'] }}{% endraw %}</b-col>
+              </b-row>
+              <b-row>
+                  <b-col>Port</b-col>
+                  <b-col>{% raw %}{{ iqstreamconfig['port'] }}{% endraw %}</b-col>
+                </b-row>
+              </b-container>
+        </b-tab>
   
-<div>
-  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(-1e3)">-1Khz</b-button>
-  <b-button style="margin-bottom: 10px;width: 125px;" v-on:click="setfreqoffset(1e3)">+1Khz</b-button>
-</div>
+      <b-tab title="Help">
+        <br>Trailer tomorrow!
+      </b-tab>
+    
+    </b-tabs>
+
+
   
-
-<b-button style="margin-bottom: 10px;width: 125px;" v-on:click="sethardware" variant="danger">Hardware</b-button>
-
-</div>
-
 
 
 <script>
@@ -116,6 +142,7 @@ vue = new Vue({
   data () {
     return {
       config: {},
+      iqstreamconfig: {},
       keys: [{'name': 'frequency', 'unit':'Hz', 'label':'Frequency'},
 	{'name': 'gain','unit':'dB', 'label':'Gain'}, 
 	{'name': 'output_block_size','unit':'Bytes', 'label':'Blocksize'}, 
@@ -125,8 +152,11 @@ vue = new Vue({
   },
   mounted () {
     axios
-      .get('/api/v1.0/config/hardware')
-      .then( response => (this.config = response.data) ) //
+      .get('/api/v1.0/config/hardwareconfig')
+      .then( response => (this.config = response.data) ) 
+    axios
+      .get('/api/v1.0/config/iqstreamconfig')
+      .then( response => (this.iqstreamconfig = response.data) ) 
   },
    filters:{
       getconfigkey: function(value,key){
