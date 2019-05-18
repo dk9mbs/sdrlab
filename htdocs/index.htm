@@ -39,7 +39,7 @@
 <div id="app">
 
   <b-navbar toggleable="lg" type="dark" variant="dark">
-    <b-navbar-brand href="#">DK9MBS SDR Server</b-navbar-brand>
+    <b-navbar-brand href="#">DK9MBS</b-navbar-brand>
 
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -69,7 +69,22 @@
   </b-navbar>
 
 
+  <b-alert
+    :show="alert.dismissCountDown"
+    dismissible
+    v-bind:variant="alert.type"
+    @dismissed="alert.dismissCountDown=0"
+    @dismiss-count-down="countDownChanged">
 
+  <p>{% raw %}{{ alert.message }}{% endraw %}</p>
+
+  <b-progress
+    v-bind:variant="alert.type"
+    :max="alert.dismissSecs"
+    :value="alert.dismissCountDown"
+    height="4px">
+  </b-progress>
+</b-alert>
 
   <b-tabs>
 
@@ -78,7 +93,7 @@
     <table style="margin-top: 10px; margin-bottom: 10px; ">
         <tr v-for="n in keys">
         <td>{% raw %}{{ n.label }}{% endraw %}</td>
-        <td><input v-model="config[n.name]" id="frequency"></td>
+        <td><input v-model="config[n.name]"></td>
         <td>{% raw %}{{ n.unit }}{% endraw %}</td>
         </tr>
         </table>
@@ -126,8 +141,21 @@
               </b-container>
         </b-tab>
   
-      <b-tab title="Help">
-        <br>Trailer tomorrow!
+      <b-tab title="Login">
+        <div>
+          <b-input-group prepend="Username" class="mt-3">
+            <b-form-input type="text" v-model="auth.username"></b-form-input>
+          </b-input-group>
+
+          <b-input-group prepend="Password" class="mt-3">
+            <b-form-input type="password" v-model="auth.password"></b-form-input>
+          </b-input-group>
+
+          <b-button style="margin-top: 10px;" v-on:click="login" variant="info">Login</b-button>
+        </div>
+
+
+
       </b-tab>
     
     </b-tabs>
@@ -144,19 +172,28 @@ vue = new Vue({
       config: {},
       iqstreamconfig: {},
       keys: [{'name': 'frequency', 'unit':'Hz', 'label':'Frequency'},
-	{'name': 'gain','unit':'dB', 'label':'Gain'}, 
-	{'name': 'output_block_size','unit':'Bytes', 'label':'Blocksize'}, 
-	{'name': 'samplerate', 'unit':'S/s', 'label':'Samplerate'},
-	{'name': 'outputfile', 'unit':'--', 'label':'Output'}]
+        {'name': 'gain','unit':'dB', 'label':'Gain'}, 
+        {'name': 'output_block_size','unit':'Bytes', 'label':'Blocksize'}, 
+        {'name': 'samplerate', 'unit':'S/s', 'label':'Samplerate'},
+        {'name': 'outputfile', 'unit':'--', 'label':'Output'}],
+        alert: {message: null, type: 'warning',dismissSecs: 10,dismissCountDown: 0,showDismissibleAlert: false}, 
+        auth: {username: 'guest', password:'guest'},
     }
   },
   mounted () {
-    axios
-      .get('/api/v1.0/config/hardwareconfig')
-      .then( response => (this.config = response.data) ) 
-    axios
-      .get('/api/v1.0/config/iqstreamconfig')
-      .then( response => (this.iqstreamconfig = response.data) ) 
+
+    axios.get('/api/v1.0/config/hardwareconfig')
+      .then( (response) => {
+        this.config = response.data
+        this.showAlert('Hardware Config has been loaded!', 'success');
+      } 
+    ) 
+    
+    axios.get('/api/v1.0/config/iqstreamconfig').then( (response) => {
+        this.iqstreamconfig=response.data;
+        this.showAlert('IQ Stream Config has been loaded!', 'success');
+      }
+    ).catch( (response) => { this.showAlert('Cannot load iqstreamconfig!!!', 'danger') } )
   },
    filters:{
       getconfigkey: function(value,key){
@@ -165,6 +202,20 @@ vue = new Vue({
       }
     },
   methods: {
+    login: function(username, password) {
+      var config = { headers: {  
+                      'Content-Type': 'application/json',
+                      'Access-Control-Allow-Origin': '*'}
+             }
+
+      axios.post('/api/v1.0/auth/login', {}, config).then( (response) => {
+        this.showAlert('logged on','success');
+      })
+      .catch( (response) => {
+        this.showAlert('Username or password are wrong!','danger');
+      })
+      
+    },
     sethardware: function (event) {
         var config = { headers: {  
                       'Content-Type': 'application/json',
@@ -172,16 +223,28 @@ vue = new Vue({
              }
 
         axios.post('/api/v1.0/config/hardware', JSON.stringify(this.config), config)
-	        .then( function(response){ console.log(response.status) })
+	        .then( (response) => { 
+            console.log(response.status); 
+            this.showAlert('Hardware settings has been changed!', 'success') 
+          })
 	        .catch( function(error) { console.log( error.response) });
     },
     setfreqoffset: function (offset, event) {
       this.config.frequency = (this.config.frequency)*1 + (offset)*1;
+    },
+    countDownChanged: function(dismissCountDown) {
+      this.alert.dismissCountDown = dismissCountDown
+    },
+    showAlert: function(message, type='warning') {
+      this.alert.message=message;
+      this.alert.type=type;
+      this.alert.dismissCountDown = this.alert.dismissSecs;
     }
   }
 })
 
 connectWebSocket();
+
 </script>
 
 

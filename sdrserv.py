@@ -161,6 +161,11 @@ def get_config(scope):
 
     return json.dumps({'error': 'No config'})
 
+# auth
+@app.route('/api/v1.0/auth/login', methods=['POST'])
+def login():
+    return "OK"
+
 server = WSGIServer((cfg['httpcfg']['host'], int(cfg['httpcfg']['port'])), app, handler_class=WebSocketHandler)
 server.serve_forever()
 
