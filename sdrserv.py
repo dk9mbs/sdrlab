@@ -30,7 +30,8 @@ iqstream=None
 cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33006},
      'hwcfg': {'output_block_size': 16384, 'frequency': 103100000
             , 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'},
-     'httpcfg': {'host': '0.0.0.0', 'port': '8080'}
+     'httpcfg': {'host': '0.0.0.0', 'port': '8080'},
+     'auth': {'username': 'guest', 'password': 'guest'}
      }
 
 parser = argparse.ArgumentParser(description='Get iq datastream form radio device')
