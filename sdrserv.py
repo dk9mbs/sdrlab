@@ -27,7 +27,7 @@ from geventwebsocket.handler import WebSocketHandler
 hardware=None
 iqstream=None
 
-cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33006},
+cfg={'iqstreamcfg': {'host': '0.0.0.0', 'port': 33001},
      'hwcfg': {'output_block_size': 16384, 'frequency': 103100000
             , 'samplerate': 2400000, 'gain': 20, 'outputfile': '-'},
      'httpcfg': {'host': '0.0.0.0', 'port': '8080'},
@@ -93,7 +93,7 @@ hardware.start()
 # Flask
 from multiprocessing import Process
 
-app = Flask(__name__, template_folder='htdocs', static_url_path='/htdocs')
+app = Flask(__name__, template_folder='htdocs/sdrserv', static_url_path='/htdocs/sdrserv/')
 app.config['SECRET_KEY'] = 'secret!'
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.jinja_env.auto_reload = True
