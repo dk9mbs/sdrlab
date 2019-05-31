@@ -47,8 +47,8 @@ app.threaded=True
 
 
 def build_graph():
-    sample_rate = 1000.0
-    f=50.0
+    sample_rate = 100.0
+    f=5.0
  
     t =  np.arange(1, step=1/sample_rate) 
     samples = np.sin(2*np.pi*f*t) + 1*np.sin(2*np.pi*(2*f)*t) +\
@@ -68,7 +68,7 @@ def build_graph():
     fft_in=np.fft.fft(samples)
     n_in=int(len(fft_in)/2+1)
 
-    filter=Filter(sample_rate,50.0,10.0,500)
+    filter=Filter(sample_rate,5.0,1.0,100)
 
     out=[]
     for x in samples:
@@ -116,7 +116,7 @@ def build_graph():
     plt.savefig(img, format='svg')
     img.seek(0)
     response=make_response(img.getvalue())
-    response.headers['Content-Type'] = 'image/scg+xml'
+    response.headers['Content-Type'] = 'image/svg+xml'
     return response
 
 
