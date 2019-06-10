@@ -62,10 +62,21 @@ class FirFilter:
 
 
     def __init_taps(self,fs, cutoff, trans_width, numtaps):
+        # lowpass:
+        #self.__taps = signal.remez(numtaps, [0, cutoff, cutoff + trans_width, 0.5*fs],[1, 0], Hz=fs)
+        
+        #highpass:
+        #self.__taps = signal.remez(numtaps, [0, cutoff - trans_width, cutoff, 0.5*fs],[0, 1], Hz=fs)
 
-        self.__taps = signal.remez(numtaps, [0, cutoff, cutoff + trans_width, 0.5*fs],[1, 0], Hz=fs)
+        # bandpass
+        #band=[190, 210]
+        #edges = [0, band[0] - trans_width, band[0], band[1],band[1] + trans_width, 0.5*fs]
+        #self.__taps = signal.remez(numtaps, edges, [0, 1, 0], Hz=fs)
 
-
+        # bandstop
+        band=[50, 240]
+        edges = [0, band[0] - trans_width, band[0], band[1], band[1] + trans_width, 0.5*fs]
+        self.__taps = signal.remez(numtaps, edges, [1, 0, 1], Hz=fs)
 
 
 

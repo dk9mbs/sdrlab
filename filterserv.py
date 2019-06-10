@@ -47,8 +47,8 @@ app.threaded=True
 
 
 def build_graph():
-    sample_rate = 100.0
-    f=5.0
+    sample_rate = 1000.0
+    f=25.0
  
     t =  np.arange(1, step=1/sample_rate) 
     samples = np.sin(2*np.pi*f*t) + 1*np.sin(2*np.pi*(2*f)*t) +\
@@ -56,19 +56,23 @@ def build_graph():
 
     samples = np.sin(2*np.pi*f*1*t) + 0.2*np.sin(2*np.pi*f*2.5*t+0.1) + \
             0.2*np.sin(2*np.pi*f*15.3*t) + 0.1*np.sin(2*np.pi*f*16.7*t + 0.1) + \
-                0.1*np.sin(2*np.pi*f*23.45*t+.8)+0.1*np.sin(2*np.pi*f*8*t)
+                0.1*np.sin(2*np.pi*f*23.45*t+.8)+0.9*np.cos(2*np.pi*f*8*t)+0.3*np.cos(2*np.pi*f*5*t)
 
 
     #for n in range(len(samples)):
     #    samples[n]=0
     #samples[0]=1
 
-
+    #for n in range(len(samples)):
+    #    if samples[n] > 1:
+    #        samples[n]=1
+    #    if samples[n] < -1:
+    #        samples[n]=-1
 
     fft_in=np.fft.fft(samples)
     n_in=int(len(fft_in)/2+1)
 
-    filter=Filter(sample_rate,5.0,1.0,100)
+    filter=Filter(sample_rate,25.0,10.0,255)
 
     out=[]
     for x in samples:
@@ -80,7 +84,8 @@ def build_graph():
     n=int(len(fft)/2+1)
 
 
-    #fig=plt.figure(1)
+    fig=plt.figure(1)
+    #fig, (ax1, ax2) = plt.subplots(2, 1)
     fig=plt.figure(figsize=(9, 9))
     plt.clf()
 
